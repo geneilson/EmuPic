@@ -6,11 +6,13 @@ public class ProgPic {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		MemoriaDePrograma mem = new MemoriaDePrograma();
-		mem.escreverInstrucao (2, 60000);
-		
-		int inst = mem.lerInstrucao(2);
-		System.out.println(inst);
+		PIC18F4550 pic = new PIC18F4550();
+		pic.getMemPrograma().escreverInstrucao(0, 0b0000111000100000);
+		pic.getMemPrograma().escreverInstrucao(2, 0b0000111000111111);
+		pic.executaCicloDeMaquina();
+		System.out.println(pic.getW());
+		pic.executaCicloDeMaquina();
+		System.out.println(pic.getW());
 		
 		// TODO Auto-generated method stub
 

@@ -7,6 +7,12 @@ public class PIC18F4550 {
 	private MemoriaDePrograma memPrograma;
 	
 	
+	
+	public PIC18F4550()  {
+		this((byte)0,(byte)0,0,0,new MemoriaDeDados(), new MemoriaDePrograma());
+		// TODO Auto-generated constructor stub
+	}
+
 	public PIC18F4550(byte w, byte opCode, int pc, int insAtual,
 			MemoriaDeDados memDados, MemoriaDePrograma memPrograma) {
 		super();
@@ -67,23 +73,35 @@ public class PIC18F4550 {
 	}
 
 	public void executaCicloDeMaquina () {
-		
+		buscaInstrucao();
+		decodifica();
+		atualiza();
 	}
 	
 	private void buscaInstrucao() {
+		insAtual = memPrograma.lerInstrucao( pc);
+		
 		
 	}
 	
 	private void decodifica() {
-		
+		int instCrua = ((insAtual & 0b1111111100000000) >> 8);
+		switch (instCrua) {
+		case 14 :
+			executaMovlw();
+			break;
+
+		default:
+			break;
+		}
 	}
 	
-	private void executa() {
-		
+	private void executaMovlw() {
+		w = (byte)insAtual;		
 	}
 	
 	private void atualiza(){
-		
+		pc+=2;
 	}
 
 }

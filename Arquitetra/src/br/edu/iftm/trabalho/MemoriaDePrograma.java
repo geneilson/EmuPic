@@ -25,7 +25,7 @@ public class MemoriaDePrograma {
 			System.out.println("Memória não pode ser usada");
 		}else if(pos>=0 && pos<=32767){
 			this.dadosDePrograma[pos] = dado;
-			System.out.println("Dado" + dado +"inserido na posição de memória: "+pos);
+			System.out.println("Dado " + dado +" inserido na posição de memória: "+pos);
 		}else {
 			System.out.println("Mémoria Inválida");
 		}
