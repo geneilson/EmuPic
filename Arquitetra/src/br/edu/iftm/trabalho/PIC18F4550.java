@@ -1,11 +1,16 @@
 package br.edu.iftm.trabalho;
 
+import java.util;
+import java.util.Stack;
+
+import br.edu.iftm.trabalho.ExemploStack.src.EstadoProcessador;
+
 public class PIC18F4550 {
-	private byte w, opCode;
+	private byte w, opCode, status;
 	private int pc = 0, insAtual;
 	private MemoriaDeDados memDados;
 	private MemoriaDePrograma memPrograma;
-	
+	Stack<EstadoProcessador> pilha = new Stack<EstadoProcessador>();
 	
 	
 	public PIC18F4550()  {
@@ -79,25 +84,51 @@ public class PIC18F4550 {
 	}
 	
 	private void buscaInstrucao() {
-		insAtual = memPrograma.lerInstrucao( pc);
-		
-		
+		insAtual = memPrograma.lerInstrucao(pc);
 	}
 	
 	private void decodifica() {
 		int instCrua = ((insAtual & 0b1111111100000000) >> 8);
 		switch (instCrua) {
 		case 14 :
-			executaMovlw();
+			movlw();
 			break;
-
+			
+			
 		default:
+			instCrua = ((insAtual & 0b1111111100000000) >> 1);
+			if (instCrua == 55){
+				movwf();
+			}
 			break;
 		}
 	}
 	
-	private void executaMovlw() {
+	private void movlw() {
 		w = (byte)insAtual;		
+	}
+	
+	private void movwf(){
+		
+	}
+	
+	private void call(){
+		EstadoProcessador estado = new EstadoProcessador();
+		estado.setPc(pc);
+		estado.setStatus(memDados.LerNaMemoria(0xfd8));
+		estado.setW(w);
+		estado.setBsr(memDados.LerNaMemoria(0xfe0));
+		
+		pilha.push(estado);
+	}
+	
+	private void preturn(){
+		EstadoProcessador recuperando = pilha.pop();
+		
+		System.out.println(recuperando.getPc());
+		System.out.println(recuperando.getBsr());
+		System.out.println(recuperando.getStatus());
+		System.out.println(recuperando.getW());
 	}
 	
 	private void atualiza(){

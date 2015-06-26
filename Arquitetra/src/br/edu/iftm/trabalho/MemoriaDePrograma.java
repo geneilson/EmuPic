@@ -46,9 +46,6 @@ public class MemoriaDePrograma {
 	}
 	
 	public void escreverInstrucao(int pos, int valor) {
-		
-
-		
 		byte MSB =(byte) ((valor & 0b1111111100000000) >> 8);
 		byte LSB =(byte) (valor & 0b0000000011111111);
 		EscreverNaMemoria(pos, MSB);
