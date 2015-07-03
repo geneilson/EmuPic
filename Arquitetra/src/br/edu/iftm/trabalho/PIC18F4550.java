@@ -1,9 +1,7 @@
 package br.edu.iftm.trabalho;
 
-import java.util;
 import java.util.Stack;
 
-import br.edu.iftm.trabalho.ExemploStack.src.EstadoProcessador;
 
 public class PIC18F4550 {
 	private byte w, opCode, status;
