@@ -4,7 +4,7 @@ import java.util.Stack;
 
 
 public class PIC18F4550 {
-	private byte w, opCode, status;
+	private byte w, opCode, status, bsr;
 	private int pc = 0, insAtual;
 	private MemoriaDeDados memDados;
 	private MemoriaDePrograma memPrograma;
@@ -91,42 +91,85 @@ public class PIC18F4550 {
 		case 14 :
 			movlw();
 			break;
-			
-			
+		case  239 :
+			goto1();
+			break;
 		default:
 			instCrua = ((insAtual & 0b1111111100000000) >> 1);
-			if (instCrua == 55){
+			switch (instCrua) {
+			case 55:
 				movwf();
+				break;
+			case 118:
+				call();
+				break;
+			default:
+				instCrua = ((insAtual & 0b1111111111111110) >> 1);
+				if(instCrua == 9){
+					preturn();
+				}
+				break;
 			}
+
 			break;
 		}
 	}
-	
+
 	private void movlw() {
 		w = (byte)insAtual;		
 	}
 	
 	private void movwf(){
+		int instwf = ((insAtual & 0b0000000100000000) >> 8);
+		if (instwf == 0) {
+			if(getInsAtual()<96){
+				memDados.EscreverNaMemoria(getInsAtual(), getW());
+			}else {
+				memDados.EscreverNaMemoria((0b111100000000) + getInsAtual(), getW());
+			}
 		
+		}else{
+			memDados.EscreverNaMemoria(bsr >> 8 + getInsAtual(), getW());
+		
+		}
+	}
+	
+	private void goto1() {
+		int arggoto1 = (byte) (insAtual & 0b0000000011111111);
+		int insgoto2 = memPrograma.lerInstrucao(pc+2);
+		int arggoto2 = ((insgoto2 & 0b0000111111111111) << 8);
+		int vaifilhao = (arggoto1 & 0b11111111) | (arggoto2 & 0b111111111111);
+		pc = vaifilhao;
 	}
 	
 	private void call(){
 		EstadoProcessador estado = new EstadoProcessador();
-		estado.setPc(pc);
-		estado.setStatus(memDados.LerNaMemoria(0xfd8));
-		estado.setW(w);
-		estado.setBsr(memDados.LerNaMemoria(0xfe0));
+		estado.setPc(pc+2);
 		
-		pilha.push(estado);
+		if (((insAtual & 0b0000000100000000) >> 8) == 1){
+			estado.setStatus(memDados.LerNaMemoria(0xfd8));
+			estado.setW(w);
+			estado.setBsr(memDados.LerNaMemoria(0xfe0));
+		}
+		
+		pilha.push(estado);		
 	}
 	
 	private void preturn(){
 		EstadoProcessador recuperando = pilha.pop();
 		
-		System.out.println(recuperando.getPc());
-		System.out.println(recuperando.getBsr());
-		System.out.println(recuperando.getStatus());
-		System.out.println(recuperando.getW());
+		pc = recuperando.getPc();
+		
+		if ((insAtual & 0b0000000000000001) == 1){
+			memDados.EscreverNaMemoria(0xfd8, recuperando.getStatus());
+			w = recuperando.getW();
+			memDados.EscreverNaMemoria(0xfe0, recuperando.getBsr());
+		}
+		
+		System.out.println("PC " + recuperando.getPc());
+		System.out.println("Status " + recuperando.getStatus());
+		System.out.println("W " + recuperando.getW());
+		System.out.println("Bsr " + recuperando.getBsr());
 	}
 	
 	private void atualiza(){

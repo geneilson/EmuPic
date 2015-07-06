@@ -1,4 +1,6 @@
+package br.edu.iftm.trabalho;
 import java.util.*;
+
 
 public class Principal {
 
